@@ -44,6 +44,7 @@ private:
 
     inline void delay();
 
+protected:
     bool writeByte(uint8_t data);
     bool readByte(uint8_t &data, bool ack);
 

@@ -1,4 +1,4 @@
-#include "I2C.h"
+#include "protocol_I2C.h"
 #include <util/delay.h>
 
 // ---------- Constructors ----------
