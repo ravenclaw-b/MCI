@@ -63,7 +63,9 @@ bool MPU6050::initialize() {
     success = success && setRegisterPointer(ACCEL_CONFIG);
     uint8_t accel_config;
     success = success && readMessage(DEVICE_ADDRESS, &accel_config, 1);
-    int accel_range = (accel_config >> 3) & 0x03; // extract
+    accel_range = (accel_config >> 3) & 0x03; // extract
+
+
 
     // convert to sensitivity
     switch (accel_range) {
@@ -78,7 +80,7 @@ bool MPU6050::initialize() {
     success = success && setRegisterPointer(GYRO_CONFIG);
     uint8_t gyro_config;
     success = success && readMessage(DEVICE_ADDRESS, &gyro_config, 1);
-    int gyro_range = (gyro_config >> 3) & 0x03; // extract
+    gyro_range = (gyro_config >> 3) & 0x03; // extract
 
     // convert to sensitivity
     switch (gyro_range) {
@@ -132,3 +134,64 @@ bool MPU6050::readAllSensors(MPU6050::MPU6050_Data &data) {
     return true;
 }
 
+bool MPU6050::setAccelRange(int range) { // 0=±2g,1=±4g,2=±8g,3=±16g
+    if (range < 0 || range > 3) {
+        return false; // Invalid range
+    }
+
+    // Read the current ACCEL_CONFIG value
+    setRegisterPointer(ACCEL_CONFIG);
+    uint8_t accel_config;
+    if (!readMessage(DEVICE_ADDRESS, &accel_config, 1)) {
+        return false;
+    }
+
+    // Set the new range
+    accel_config = (accel_config & 0xE7) | (range << 3);
+    uint8_t data[2] = {ACCEL_CONFIG, accel_config};
+    if (!writeMessage(DEVICE_ADDRESS, data, 2)) {
+        return false;
+    }
+
+    // Update local variables
+    accel_range = range;
+    switch (accel_range) {
+        case 0: accel_sensitivity = 16384.0; break; // ±2g
+        case 1: accel_sensitivity = 8192.0;  break; // ±4g
+        case 2: accel_sensitivity = 4096.0;  break; // ±8g
+        case 3: accel_sensitivity = 2048.0;  break; // ±16g
+    }
+
+    return true;
+}
+
+bool MPU6050::setGyroRange(int range) { // 0=±250°/s,1=±500°/s,2=±1000°/s,3=±2000°/s
+    if (range < 0 || range > 3) {
+        return false; // Invalid range
+    }
+
+    // Read the current GYRO_CONFIG value
+    setRegisterPointer(GYRO_CONFIG);
+    uint8_t gyro_config;
+    if (!readMessage(DEVICE_ADDRESS, &gyro_config, 1)) {
+        return false;
+    }
+
+    // Set the new range
+    gyro_config = (gyro_config & 0xE7) | (range << 3);
+    uint8_t data[2] = {GYRO_CONFIG, gyro_config};
+    if (!writeMessage(DEVICE_ADDRESS, data, 2)) {
+        return false;
+    }
+
+    // Update local variables
+    gyro_range = range;
+    switch (gyro_range) {
+        case 0: gyro_sensitivity = 131.0; break;  // ±250°/s
+        case 1: gyro_sensitivity = 65.5; break;   // ±500°/s
+        case 2: gyro_sensitivity = 32.8; break;   // ±1000°/s
+        case 3: gyro_sensitivity = 16.4; break;   // ±2000°/s
+    }
+
+    return true;
+}

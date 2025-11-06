@@ -39,10 +39,19 @@ public:
     bool readAllSensors(MPU6050::MPU6050_Data &data);
     bool initialize();
 
+    int getAccelRange() const { return accel_range; }
+    int getGyroRange() const { return gyro_range; }
+
+    bool setAccelRange(int range);
+    bool setGyroRange(int range);
+
 private:
     // config variables
     float accel_sensitivity = 0; 
     float gyro_sensitivity = 0;  
+
+    int accel_range = 0;
+    int gyro_range = 0;
     
     
     // Reading 14 bytes starting from ACCEL_XOUT_H (0x3B) will get all sensor data:
